@@ -1,26 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import { compose } from 'recompose'
 
-function App() {
+const withConditionalRenderings = compose(
+  withLoadingIndicator,
+  withTodosNull,
+  withTodosEmpty
+)
+
+function App(props) {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <TodoListWithConditionalRendering
+      todos={props.todos}
+      isLoadingTodos={props.isLoadingTodos} />
+  )
 }
 
-export default App;
+const withTodosNull = (Component) => (props) =>
+  !props.todos
+    ? null
+    : <Component { ...props } />
+
+const withTodosEmpty = (Component) => (props) =>
+  !props.todos.length
+    ? <div><p>You have no Todos.</p></div>
+    : <Component { ...props } />
+
+const withLoadingIndicator = (Component) => ({ isLoadingTodos, ...others }) =>
+  props.isLoadingTodos
+    ? <div><p>Loading todos...</p></div>
+    : <Component { ...others } />
+
+const TodoListWithConditionalRendering = withConditionalRenderings(TodoList)
+
+function TodoList({ todos }) {
+  return (
+    <div>
+      {todos.map(todo => <TodoItem key={todo.id} todo={todo} />)}
+    </div>
+  )
+}
+
+export default App
